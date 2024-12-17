@@ -1,0 +1,36 @@
+name: Build Python ZipApp
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ZipApp on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Shiv and Dependencies
+        run: |
+          pip install shiv
+          pip install -r requirements.txt || echo "No dependencies"
+
+      - name: Build ZipApp
+        run: python build_collector.py
+
+      - name: Upload ZipApp
+        uses: actions/upload-artifact@v3
+        with:
+          name: nxc-zipapp-${{ matrix.os }}-${{ matrix.python-version }}
+          path: bin/nxc
